@@ -66,9 +66,6 @@ class _EcoSnapState extends State<EcoSnap> {
 
       String fileName = 'image.png';
 
-      // Ensure that the path_provider plugin is properly initialized
-      WidgetsFlutterBinding.ensureInitialized();
-
       // Get the temporary directory
       Directory tempDir = await getTemporaryDirectory();
       String filePath = join(tempDir.path, fileName);

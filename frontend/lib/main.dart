@@ -45,6 +45,7 @@ class _EcoSnapState extends State<EcoSnap> {
     );
 
     _initializedControllerFuture = _controller.initialize();
+    super.initState();
   }
 
   @override

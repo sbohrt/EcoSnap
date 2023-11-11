@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:path/path.dart';
+import 'package:path_provider/path_provider.dart';
 
 void main() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
@@ -36,6 +40,7 @@ class EcoSnap extends StatefulWidget {
 class _EcoSnapState extends State<EcoSnap> {
   late CameraController _controller;
   late Future<void> _initializedControllerFuture;
+  late String imagePath;
 
   @override
   void initState() {
@@ -45,6 +50,7 @@ class _EcoSnapState extends State<EcoSnap> {
     );
 
     _initializedControllerFuture = _controller.initialize();
+
     super.initState();
   }
 
@@ -54,20 +60,93 @@ class _EcoSnapState extends State<EcoSnap> {
     super.dispose();
   }
 
+  Future<void> _takePicture() async {
+    try {
+      await _initializedControllerFuture;
+
+      String fileName = 'image.png';
+
+      // Ensure that the path_provider plugin is properly initialized
+      WidgetsFlutterBinding.ensureInitialized();
+
+      // Get the temporary directory
+      Directory tempDir = await getTemporaryDirectory();
+      String filePath = join(tempDir.path, fileName);
+
+      // Take a picture
+      XFile picture = await _controller.takePicture();
+
+      // Move the picture to the desired location
+      await File(picture.path).copy(filePath);
+
+      // Save the file path to the state
+      setState(() {
+        imagePath = filePath;
+      });
+
+      // You can now use 'imagePath' to pass it to another API or perform other actions
+      print('Image Path: $imagePath');
+    } catch (e) {
+      print('Error taking picture: $e');
+    }
+  }
+
+  Future<void> _savePicture() async {
+    Directory tempDir = await getTemporaryDirectory();
+    String tempDirPath = tempDir.path;
+    File imageFile = File('$tempDirPath/image.jpg');
+    imageFile.writeAsString('$imageFile');
+    print(imageFile.readAsString());
+  }
+
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
     return Scaffold(
-      body: FutureBuilder<void>(
-          future: _initializedControllerFuture,
-          builder: (context, snapshot) {
-            if (snapshot.connectionState == ConnectionState.done) {
-              return CameraPreview(_controller);
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          }),
+      body: SizedBox(
+        width: size.width,
+        height: size.height,
+        child: FittedBox(
+          fit: BoxFit.cover,
+          child: Stack(
+            children: [
+              SizedBox(
+                child: SizedBox(
+                  width: 100,
+                  child: FutureBuilder<void>(
+                      future: _initializedControllerFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          return CameraPreview(_controller);
+                        } else {
+                          return const Center(
+                            child: CircularProgressIndicator(),
+                          );
+                        }
+                      }),
+                ),
+              ),
+              Positioned.fill(
+                child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 2.5),
+                      child: OutlinedButton(
+                        onPressed: _takePicture,
+                        child: null,
+                        style: OutlinedButton.styleFrom(
+                            shape: const CircleBorder(),
+                            backgroundColor: Colors.transparent,
+                            side: const BorderSide(
+                                color: Colors.black, width: 0.3),
+                            minimumSize: const Size.fromRadius(7)),
+                      ),
+                    )),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

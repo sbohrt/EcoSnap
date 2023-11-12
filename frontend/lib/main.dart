@@ -13,7 +13,6 @@ import 'package:google_vision/google_vision.dart';
 import 'package:googleapis/vision/v1.dart' as vision_api; // Prefixed import
 import 'package:googleapis/vision/v1.dart' as vision;
 import 'package:googleapis_auth/auth_io.dart';
-import 'dart:io';
 import 'package:google_vision/google_vision.dart' as vision;
 
 void main() async {
@@ -51,7 +50,6 @@ class EcoSnap extends StatefulWidget {
 
   final CameraDescription camera;
 
-
   @override
   State<EcoSnap> createState() => _EcoSnapState();
 }
@@ -61,7 +59,6 @@ class _EcoSnapState extends State<EcoSnap> {
   late Future<void> _initializedControllerFuture;
   String _resultText = 'Waiting for image processing...';
   bool isButtonEnabled = true;
-
 
   // initialize state variables
   @override
@@ -82,7 +79,6 @@ class _EcoSnapState extends State<EcoSnap> {
     _controller.dispose();
     super.dispose();
   }
-
 
   // function to take the picture and move to desired path
   Future<void> _takePicture() async {
@@ -120,23 +116,21 @@ class _EcoSnapState extends State<EcoSnap> {
     // go to the next screen
     if (mounted) {
       Navigator.push(
-        context, 
+        context,
         MaterialPageRoute(
-          builder: (context) => OutputScreen(
-            textResult: _resultText,
-            // call back function to update state variables
-            onResultSelected: (updatedResult) {
-              setState(() {
-               _resultText = updatedResult;
-               isButtonEnabled = true;
-              }
-            );
-          }
-        )
-      ),
-    );
+            builder: (context) => OutputScreen(
+                textResult: _resultText,
+                // call back function to update state variables
+                onResultSelected: (updatedResult) {
+                  setState(() {
+                    _resultText = updatedResult;
+                    isButtonEnabled = true;
+                  });
+                })),
+      );
+    }
   }
-  }
+
   // construction of camera preview
   @override
   Widget build(BuildContext context) {
@@ -160,7 +154,8 @@ class _EcoSnapState extends State<EcoSnap> {
                           return CameraPreview(_controller);
                         } else {
                           return const Center(
-                            child: CircularProgressIndicator(), // add loading icon
+                            child:
+                                CircularProgressIndicator(), // add loading icon
                           );
                         }
                       }),
@@ -168,17 +163,20 @@ class _EcoSnapState extends State<EcoSnap> {
               ),
               Positioned.fill(
                 child: Align(
-                    alignment: Alignment.bottomCenter, // alligning button to take picture 
+                    alignment: Alignment
+                        .bottomCenter, // alligning button to take picture
                     child: Padding(
                       padding: const EdgeInsets.only(bottom: 0),
                       child: OutlinedButton(
-                        onPressed: isButtonEnabled ? () => _navigateToNextScreen(context) : null, // once picture is taken, go to next screen
+                        onPressed: isButtonEnabled
+                            ? () => _navigateToNextScreen(context)
+                            : null, // once picture is taken, go to next screen
                         child: null,
                         style: OutlinedButton.styleFrom(
                             shape: const CircleBorder(),
                             backgroundColor: Colors.transparent,
-                            side: const BorderSide(
-                                color: Colors.white, width: 1),
+                            side:
+                                const BorderSide(color: Colors.white, width: 1),
                             minimumSize: const Size.fromRadius(7)),
                       ),
                     )),
@@ -189,6 +187,7 @@ class _EcoSnapState extends State<EcoSnap> {
       ),
     );
   }
+
   // Modifications start here
   Future<void> _processImage(String pathName) async {
     String result = await processImage(pathName); // Wait for the result
@@ -219,7 +218,7 @@ class OutputScreen extends StatefulWidget {
 
 class _OutputScreenState extends State<OutputScreen> {
   String outputText = "";
-  
+
   @override
   void initState() {
     super.initState();
@@ -229,23 +228,24 @@ class _OutputScreenState extends State<OutputScreen> {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          BigCard(output: widget.textResult), // calls class that adds second screen
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: ElevatedButton(
-            onPressed: (){
-              widget.onResultSelected(outputText); // Use the callback to pass data
+        child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        BigCard(
+            output: widget.textResult), // calls class that adds second screen
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: ElevatedButton(
+            onPressed: () {
+              widget.onResultSelected(
+                  outputText); // Use the callback to pass data
               Navigator.pop(context);
             },
             child: const Text('Take a New Picture'),
           ),
-          )
-        ],
-      )
-    );
+        )
+      ],
+    ));
   }
 }
 
@@ -254,13 +254,11 @@ class BigCard extends StatelessWidget {
     super.key,
     required this.output,
   });
-  
+
   final String output;
 
-  
   @override
-  Widget build(BuildContext context){
-
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final style = theme.textTheme.displayMedium!.copyWith(
       color: Colors.black,
@@ -268,15 +266,13 @@ class BigCard extends StatelessWidget {
     );
 
     return Card(
-      color: theme.colorScheme.onPrimary,
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Text(
-          output,
-          style: style,
-        )
-      )
-    );
+        color: theme.colorScheme.onPrimary,
+        child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Text(
+              output,
+              style: style,
+            )));
   }
 }
 
@@ -338,7 +334,7 @@ Future<String> displayResults(
   }
 
   StringBuffer results = StringBuffer('Detected Objects:\n\n');
-  
+
   for (var object in objects) {
     double confidence = object.score ?? 0.0;
     // Await the asynchronous call to determineWasteBin
@@ -357,7 +353,8 @@ Future<String> displayResults(
 // Define the waste bin based on the waste type
 Future<String> determineWasteBin(String wasteType) async {
   // Formulate a prompt for the API
-  String prompt = '''
+  String prompt =
+      '''
 Given environmental and recycling guidelines, should a(n) '$wasteType' be disposed of in recyclable, organic, or general waste bins? 
 Please consider the most environmentally friendly option. 
 Provide your answer in a two-word format, for example, "Answer: Recyclable".
@@ -365,7 +362,6 @@ Provide your answer in a two-word format, for example, "Answer: Recyclable".
 
   // Call the ChatGPT API
   String apiResponse = await fetchResponseFromOpenAI(prompt);
-
 
   // Process the API response to categorize the waste
   // This is a simple string matching; you might need a more sophisticated approach based on the API response
@@ -411,6 +407,7 @@ Future<String> fetchResponseFromOpenAI(String prompt) async {
     return 'Error: Exception during API call';
   }
 }
+
 Future<vision.VisionApi> getVisionApiClient() async {
   final credentialsJson =
       await rootBundle.loadString('assets/my-credentials.json');

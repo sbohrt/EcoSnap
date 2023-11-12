@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path/path.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:path_provider_foundation/path_provider_foundation.dart';
 
 void main() async {
   // Ensure that plugin services are initialized so that `availableCameras()`
@@ -15,6 +16,8 @@ void main() async {
 
   // Get a specific camera from the list of available cameras.
   final firstCamera = cameras.first;
+
+  PathProviderFoundation.registerWith();
 
   runApp(
     MaterialApp(
@@ -67,7 +70,8 @@ class _EcoSnapState extends State<EcoSnap> {
       String fileName = 'image.png';
 
       // Get the temporary directory
-      Directory tempDir = await getTemporaryDirectory();
+
+      Directory tempDir = await getApplicationDocumentsDirectory();
       String filePath = join(tempDir.path, fileName);
 
       // Take a picture
@@ -86,14 +90,6 @@ class _EcoSnapState extends State<EcoSnap> {
     } catch (e) {
       print('Error taking picture: $e');
     }
-  }
-
-  Future<void> _savePicture() async {
-    Directory tempDir = await getTemporaryDirectory();
-    String tempDirPath = tempDir.path;
-    File imageFile = File('$tempDirPath/image.jpg');
-    imageFile.writeAsString('$imageFile');
-    print(imageFile.readAsString());
   }
 
   @override
